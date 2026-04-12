@@ -1,0 +1,441 @@
+/* --- PAGE STYLES (MyTasks & Profile) --- */
+
+/* =========================================
+   1. MY TASKS PAGE STYLES
+   ========================================= */
+
+.my-tasks-wrapper {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Controls Area (Search, Filter, Add Button) */
+.controls-area {
+  margin-bottom: 2rem;
+}
+
+.search-filters-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Search Bar Full Width on Mobile */
+.search-bar {
+  flex: 1;
+  min-width: 250px;
+}
+
+/* Filter Tabs Styling */
+.filter-tabs {
+  display: flex;
+  background-color: var(--bg-card);
+  padding: 0.25rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.filter-tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.filter-tab:hover { color: var(--text-primary); }
+.filter-tab.active { background-color: var(--primary); color: #fff; }
+
+/* Task List & Cards */
+.task-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.task-card {
+  background-color: var(--bg-card);
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align top for multiline text */
+  border-left: 4px solid transparent;
+  transition: var(--transition);
+  gap: 1rem;
+}
+
+.task-card:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.task-content {
+  flex: 1;
+}
+
+.task-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.task-header-row h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.task-content p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+  white-space: pre-wrap; /* Preserve line breaks in description */
+}
+
+.task-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-wrap: wrap; /* Wrap on small mobile */
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.meta-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Status & Priority Badges */
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.badge-pending { background-color: var(--warning-light); color: var(--warning); }
+.badge-completed { background-color: var(--success-light); color: var(--success); }
+.badge-progress { background-color: var(--primary-light); color: var(--primary); }
+
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-high { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.priority-medium { background-color: rgba(249, 115, 22, 0.1); color: #f97316; }
+.priority-low { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; }
+
+.overdue-text {
+  color: var(--danger);
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Task Actions (Edit/Delete) */
+.task-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0; /* Don't shrink buttons */
+}
+
+.action-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover { background-color: var(--bg-input); color: var(--primary); }
+.action-btn.btn-delete:hover { color: var(--danger); border-color: var(--danger); }
+
+/* =========================================
+   2. PROFILE PAGE & FORMS STYLES
+   ========================================= */
+
+.page-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem; /* Added side padding for mobile */
+  animation: slideInRight 0.3s ease-out;
+}
+
+.large-form {
+  background: var(--bg-card);
+  padding: 2.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.section-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.form-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+/* Input Styles */
+.form-control, .large-input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  font-size: 1rem;
+}
+
+.form-control:focus, .large-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+  background-color: var(--bg-card);
+}
+
+.large-input {
+  padding: 1rem;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: background 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.btn-primary:hover { background-color: var(--primary-hover); }
+
+.btn-secondary {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.btn-secondary:hover { background-color: var(--bg-input); }
+
+.large-btn { padding: 0.85rem 2rem; font-size: 1rem; width: auto; }
+
+/* =========================================
+   3. SHARED COMPONENTS (Toast, Empty, Back)
+   ========================================= */
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+}
+
+.back-btn:hover { background: var(--bg-input); color: var(--text-primary); }
+
+.empty-state, .loading-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.toast-notification {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: white;
+  color: #333;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  z-index: 9999;
+  animation: slideIn 0.3s ease forwards, fadeOut 0.5s ease 2.5s forwards;
+  min-width: 250px;
+  border-left: 5px solid #333;
+}
+
+.toast-success { border-left-color: var(--success); color: #065f46; }
+.toast-error { border-left-color: var(--danger); color: #991b1b; }
+
+/* Animations */
+@keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+
+/* =========================================
+   4. MOBILE RESPONSIVE FIXES (CRITICAL)
+   ========================================= */
+@media (max-width: 768px) {
+  
+  /* --- MyTasks Controls Stack --- */
+  .controls-area {
+    flex-direction: column; /* Stack Search & Buttons vertically */
+    align-items: stretch;   /* Full width */
+    gap: 1rem;
+  }
+
+  .search-bar {
+    width: 100% !important; /* Force full width */
+  }
+
+  /* Tabs Scrollable on Mobile */
+  .filter-tabs {
+    width: 100%;
+    overflow-x: auto; /* Horizontal scroll if tabs are many */
+    justify-content: flex-start; /* Align left */
+    white-space: nowrap;
+    padding-bottom: 4px;
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .filter-tabs::-webkit-scrollbar { height: 4px; }
+  .filter-tabs::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+  .filter-tab { flex-shrink: 0; }
+
+  /* Sort & Add Button Stack */
+  .form-row, 
+  .search-filters-row > div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .btn-primary, .large-btn, .btn-secondary {
+    width: 100%; /* Full width buttons on mobile */
+    justify-content: center;
+  }
+
+  /* --- Profile Form Fixes --- */
+  .page-form-container {
+    padding: 0; /* Remove extra padding on mobile */
+  }
+
+  .large-form {
+    padding: 1.5rem;
+    border-radius: 0; /* Full width edges */
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+  }
+
+  .form-footer {
+    flex-direction: column-reverse; /* Cancel button on top */
+    gap: 1rem;
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-body);
+    padding: 1rem 0 2rem 0; /* Space for mobile home bar */
+    margin-bottom: -2rem; /* Counteract padding */
+    z-index: 10;
+    border-top: 1px solid var(--border);
+  }
+  
+  /* Adjust Form Rows */
+  .form-row {
+    grid-template-columns: 1fr; /* Stack inputs */
+  }
+
+  /* --- Task Card Adjustments --- */
+  .task-card {
+    flex-direction: column; /* Stack content and buttons */
+    align-items: stretch;
+  }
+
+  .task-actions {
+    justify-content: flex-end; /* Buttons to the right */
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+  
+  .toast-notification {
+    left: 20px; right: 20px; width: auto; min-width: 0; bottom: 20px;
+  }
+}
