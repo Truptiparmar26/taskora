@@ -1,0 +1,153 @@
+/* ==========================================================================
+   TASKORA ENTERPRISE CORE APPLICATION STYLES
+   Universal Responsive Geometry & Full-Screen Edge-to-Edge Container Mastery
+   ========================================================================== */
+
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+}
+
+/* Ensure body and app container take full screen geometry without side gaps */
+html, body {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 100dvh;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden;
+  background-color: var(--bg-body, #F8FAFC);
+  color: var(--text-primary, #0F172A);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Main Application Parent Frame */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Main Content Workspace Deck */
+.main-content {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  height: 100%;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Content Scrolling Portal */
+.content-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem 2.25rem;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+/* Force user avatar thumbnails to remain strictly circular and well-formatted */
+.user-avatar, 
+.avatar, 
+.profile-thumb {
+  aspect-ratio: 1 / 1; 
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid rgba(139, 92, 246, 0.25);
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Universal Button Utilities */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-lg, 14px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.45);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  color: var(--primary, #6366f1);
+  transform: scale(1.1);
+}
+
+/* Modal Portal Backdrop */
+.modal-overlay {
+  position: fixed;
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.modal {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  padding: 2.25rem;
+  border-radius: 24px;
+  width: 520px;
+  max-width: 95%;
+  box-shadow: 0 25px 55px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+}
+
+/* Universal Mobile Adaptations */
+@media (max-width: 768px) {
+  .content-scroll {
+    padding: 1.25rem 1rem;
+  }
+  
+  .modal {
+    padding: 1.5rem 1.25rem;
+    border-radius: 20px;
+  }
+}
