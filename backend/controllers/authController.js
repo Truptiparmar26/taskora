@@ -34,14 +34,13 @@ exports.register = async (req, res) => {
 
     await user.save();
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "secret_key_default", { expiresIn: "7d" });
+
     res.status(201).json({ 
       token, 
       user: { id: user._id, name: user.name, email: user.email, img: user.img },
       msg: "Account created successfully!"
     });
-
   } catch (err) {
     console.error("Registration error:", err);
     if (err.code === 11000) {
@@ -74,7 +73,7 @@ exports.login = async (req, res) => {
     }
 
     // 4. Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "secret_key_default", { expiresIn: "7d" });
 
     res.json({ 
       token, 
@@ -89,19 +88,29 @@ exports.login = async (req, res) => {
 
 // UPDATE PROFILE
 exports.updateProfile = async (req, res) => {
-  const { name, img } = req.body;
+  const { name, email, img } = req.body;
   try {
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (img !== undefined) updateData.img = img;
+
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id, 
-      { name, img }, 
+      updateData, 
       { new: true }
     );
     
+    if (!updatedUser) {
+      return res.status(404).json({ msg: "User account not found." });
+    }
+
     res.json({ 
       user: { id: updatedUser._id, name: updatedUser.name, email: updatedUser.email, img: updatedUser.img },
       msg: "Profile updated successfully!"
     });
   } catch (err) {
+    console.error("Update profile error:", err);
     res.status(500).json({ msg: "Error updating profile details." });
   }
 };
@@ -112,7 +121,9 @@ exports.changePassword = async (req, res) => {
 
   try {
     const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ msg: "User account not found." });
+    if (!user) {
+      return res.status(404).json({ msg: "User account not found." });
+    }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
@@ -130,8 +141,8 @@ exports.changePassword = async (req, res) => {
     await user.save();
 
     res.json({ msg: "Password changed successfully." });
-
   } catch (err) {
+    console.error("Change password error:", err);
     res.status(500).json({ msg: "Server error while changing password." });
   }
 };
@@ -142,6 +153,7 @@ exports.deleteAccount = async (req, res) => {
     await User.findByIdAndDelete(req.user._id);
     res.json({ msg: "Account deleted successfully." });
   } catch (err) {
+    console.error("Delete account error:", err);
     res.status(500).json({ msg: "Error deleting account." });
   }
 };

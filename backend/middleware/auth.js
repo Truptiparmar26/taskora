@@ -1,31 +1,8 @@
-
-// const jwt = require("jsonwebtoken");
-
-// module.exports = (req, res, next) => {
-//   const authHeader = req.header("Authorization");
-
-//   if (!authHeader) {
-//     return res.status(401).json({ msg: "No token" });
-//   }
-
-//   try {
-//     const token = authHeader.split(" ")[1]; // 🔥 IMPORTANT
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-//     req.user = decoded.id;
-//     next();
-//   } catch (err) {
-//     res.status(401).json({ msg: "Invalid token" });
-//   }
-// };
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 exports.protect = async (req, res, next) => {
   let token;
-
-  // 1. DEBUG: Check if middleware runs
-  console.log("--- Auth Middleware Hit ---");
 
   if (
     req.headers.authorization &&
@@ -36,23 +13,32 @@ exports.protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret_key_if_empty");
 
-      // Get user from the token
-      // IMPORTANT: We must attach the user to req.user
+      // Get user from the token and attach to request
       req.user = await User.findById(decoded.id).select("-password");
 
-      // 2. DEBUG: Check if user is found
-      console.log("User found in Middleware:", req.user);
+      if (!req.user) {
+        return res.status(401).json({ 
+          msg: "User account no longer found in database. Please clear browser storage or log in again.",
+          message: "User account no longer found in database. Please clear browser storage or log in again." 
+        });
+      }
 
-      next();
+      return next();
     } catch (error) {
-      console.error("Auth Error:", error.message);
-      res.status(401).json({ message: "Not authorized, token failed" });
+      console.error("Auth Token Verification Error:", error.message);
+      return res.status(401).json({ 
+        msg: "Not authorized, authentication token failed or expired. Please sign in again.",
+        message: "Not authorized, authentication token failed or expired. Please sign in again."
+      });
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: "Not authorized, no token" });
+    return res.status(401).json({ 
+      msg: "Not authorized, no session token provided. Please log in first.",
+      message: "Not authorized, no session token provided. Please log in first." 
+    });
   }
 };

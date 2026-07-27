@@ -1,140 +1,108 @@
-// // const Task = require("../models/Task");
-
-// // exports.getTasks = async (req, res) => {
-// //   // We specifically need the ID from the req.user object
-// //   const tasks = await Task.find({ userId: req.user.id });
-// //   res.json(tasks);
-// // };
-
-// // exports.createTask = async (req, res) => {
-// //   const task = await Task.create({
-// //     ...req.body,
-// //     userId: req.user.id // Use .id here too
-// //   });
-// //   res.json(task);
-// // };
-// // exports.updateTask = async (req, res) => {
-// //   const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
-// //   res.json(task);
-// // };
-
-// // exports.deleteTask = async (req, res) => {
-// //   await Task.findByIdAndDelete(req.params.id);
-// //   res.json("Deleted");
-// // };
-// const Task = require("../models/Task");
-
-// // Get Tasks
-// exports.getTasks = async (req, res) => {
-//   try {
-//     // Agar auth middleware sahi hai, toh req.user ID string (ObjectId) hogi
-//     const tasks = await Task.find({ userId: req.user }); 
-    
-//     // Yahan bhi .id lagne se koi dikkat nahi hai kyunki Mongoose cast karta hai
-//     // Lekin cleanliness ke liye req.user.id use kiya hai.
-    
-//     res.json(tasks);
-//   } catch (error) {
-//     res.status(500).json({ msg: "Error fetching tasks" });
-//   }
-// };
-
-// // Create Task
-// exports.createTask = async (req, res) => {
-//   console.log("User ID in Task Controller:", req.user);
-//   try {
-//     const task = await Task.create({
-//       title: req.body.title,
-//       description: req.body.description,
-//       dueDate: req.body.dueDate,
-//       status: req.body.status,
-//       priority: req.body.priority,
-//       userId: req.user.id // <--- Auth middleware se ID aa rahi hai
-//     });
-//     res.json(task);
-//   } catch (error) {
-//     console.error("Error creating task:", error);
-//     res.status(500).json({ msg: "Server error creating task" });
-//   }
-// };
-
-
-// // Update Task
-// exports.updateTask = async (req, res) => {
-//   try {
-//     const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//     res.json(task);
-//   } catch (error) {
-//     res.status(500).json({ msg: "Error updating task" });
-//   }
-// };
-
-// // Delete Task
-// exports.deleteTask = async (req, res) => {
-//   try {
-//     const task = await Task.findByIdAndDelete(req.params.id);
-//     if (!task) return res.status(404).json({ msg: "Task not found" });
-//     res.json({ msg: "Task deleted" });
-//   } catch (error) {
-//     res.status(500).json({ msg: "Error deleting task" });
-//   }
-// };
- 
-
 const Task = require("../models/Task");
+
+// Helper to reliably extract user ID from authenticated request
+const getUserId = (req) => {
+  if (!req.user) return null;
+  return req.user._id || req.user.id || (typeof req.user === "string" ? req.user : null);
+};
 
 // Get Tasks
 exports.getTasks = async (req, res) => {
   try {
-    // FIX: Use req.user._id instead of req.user
-    const tasks = await Task.find({ userId: req.user._id }); 
-    
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ msg: "Authentication session required. Please sign in again." });
+    }
+    const tasks = await Task.find({ userId }).sort({ createdAt: -1 }); 
     res.json(tasks);
   } catch (error) {
-    res.status(500).json({ msg: "Error fetching tasks" });
+    console.error("Error fetching tasks:", error);
+    res.status(500).json({ msg: "Error fetching tasks from server." });
   }
 };
 
 // Create Task
 exports.createTask = async (req, res) => {
-  // FIX: Log the ID correctly to verify
-  console.log("User ID in Task Controller:", req.user._id);
-  
   try {
-    const task = await Task.create({
-      title: req.body.title,
-      description: req.body.description,
-      dueDate: req.body.dueDate,
-      status: req.body.status,
-      priority: req.body.priority,
-      // FIX: Use req.user._id instead of req.user.id
-      userId: req.user._id 
-    });
-    res.json(task);
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ msg: "Your session has expired or is invalid. Please log out and log in again." });
+    }
+
+    if (!req.body.title || !req.body.title.trim()) {
+      return res.status(400).json({ msg: "Target Title is required and cannot be empty." });
+    }
+
+    const descVal = (req.body.description || req.body.desc || "").toString();
+    const dateVal = req.body.dueDate || req.body.date || "";
+    const priorityVal = req.body.priority || "Medium";
+    const statusVal = req.body.status || "pending";
+
+    const taskData = {
+      userId,
+      title: req.body.title.trim(),
+      description: descVal,
+      desc: descVal,
+      dueDate: dateVal,
+      date: dateVal,
+      priority: priorityVal,
+      status: statusVal
+    };
+
+    const task = await Task.create(taskData);
+    res.status(201).json(task);
   } catch (error) {
-    console.error("Error creating task:", error);
-    res.status(500).json({ msg: "Server error creating task" });
+    console.error("Error creating task in MongoDB:", error);
+    const detailedMsg = error.errors ? Object.values(error.errors).map(e => e.message).join(", ") : error.message;
+    res.status(500).json({ msg: `Database Error: ${detailedMsg || "Unable to save task."}` });
   }
 };
-
 
 // Update Task
 exports.updateTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ msg: "Your session has expired. Please log in again." });
+    }
+
+    const updateData = { ...req.body };
+    if (updateData.description !== undefined) updateData.desc = updateData.description;
+    if (updateData.desc !== undefined) updateData.description = updateData.desc;
+    if (updateData.dueDate !== undefined) updateData.date = updateData.dueDate;
+    if (updateData.date !== undefined) updateData.dueDate = updateData.date;
+
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, userId }, 
+      updateData, 
+      { new: true, runValidators: false }
+    );
+    if (!task) {
+      return res.status(404).json({ msg: "Task record not found or unauthorized." });
+    }
     res.json(task);
   } catch (error) {
-    res.status(500).json({ msg: "Error updating task" });
+    console.error("Error updating task:", error);
+    const detailedMsg = error.errors ? Object.values(error.errors).map(e => e.message).join(", ") : error.message;
+    res.status(500).json({ msg: `Database Error: ${detailedMsg || "Unable to modify task."}` });
   }
 };
 
 // Delete Task
 exports.deleteTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndDelete(req.params.id);
-    if (!task) return res.status(404).json({ msg: "Task not found" });
-    res.json({ msg: "Task deleted" });
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ msg: "Your session has expired. Please log in again." });
+    }
+
+    const task = await Task.findOneAndDelete({ _id: req.params.id, userId });
+    if (!task) {
+      return res.status(404).json({ msg: "Task record not found or unauthorized." });
+    }
+    res.json({ msg: "Task permanently purged." });
   } catch (error) {
-    res.status(500).json({ msg: "Error deleting task" });
+    console.error("Error deleting task:", error);
+    res.status(500).json({ msg: "Error terminating task." });
   }
 };

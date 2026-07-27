@@ -8,438 +8,451 @@ import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Layout from './Layout';
 import './Profile.css';
-import './PageStyles.css'; // Access global luxury toast tokens
 
 export default function Profile({ darkMode, toggleTheme }) {
-  const { user, updateUser, logout } = useAuth();
+  const { user, login, showToast } = useAuth();
 
+  // Navigation Studio Tab (general | security | danger)
   const [activeTab, setActiveTab] = useState('general');
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'success' });
 
-  const [profileData, setProfileData] = useState({ name: '', img: '' });
-  const [passData, setPassData] = useState({ current: '', new: '', confirm: '' });
-  const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
+  // General Profile Identity State
+  const [generalForm, setGeneralForm] = useState({
+    name: '',
+    email: '',
+    img: ''
+  });
+  const [isUpdatingGeneral, setIsUpdatingGeneral] = useState(false);
+
+  // Security & Password Calibration State
+  const [securityForm, setSecurityForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isUpdatingSecurity, setIsUpdatingSecurity] = useState(false);
+
+  const triggerToast = showToast || ((msg) => console.log(msg));
 
   useEffect(() => {
     if (user) {
-      setProfileData({ name: user.name || '', img: user.img || '' });
+      setGeneralForm({
+        name: user.name || '',
+        email: user.email || '',
+        img: user.img || ''
+      });
     }
   }, [user]);
 
-  const showToast = (title, message, type = 'success') => {
-    setToast({ show: true, title, message, type });
-    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3500);
-  };
-
-  // 1. UPDATE PROFILE DETAILS (Name & Photo)
-  const handleProfileSave = async (e) => {
+  // Handle General Profile Updates
+  const handleGeneralSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setIsUpdatingGeneral(true);
     try {
-      const res = await API.put("/auth/profile", { name: profileData.name.trim(), img: profileData.img });
-      updateUser(res.data.user);
-      showToast("Identity Synchronized ⚡", "Your profile credentials and avatar have been saved to cloud storage.", "success");
-    } catch (error) {
-      console.error("Error Details:", error);
-      let errorMsg = "Unable to sync identity credentials with server.";
-      if (error.response?.data?.msg) errorMsg = error.response.data.msg;
-      else if (error.response?.data?.message) errorMsg = error.response.data.message;
-      else if (error.message) errorMsg = error.message;
-
-      showToast("Sync Failed", errorMsg, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        showToast("File Too Large", "Please pick an image smaller than 5MB.", "error");
-        return;
+      const res = await API.put("/auth/profile", generalForm);
+      if (res.data && res.data.user) {
+        login(res.data.user, localStorage.getItem('token'));
+      } else {
+        login({ ...user, ...generalForm }, localStorage.getItem('token'));
       }
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setProfileData(prev => ({ ...prev, img: reader.result }));
-        showToast("Photo Selected 📷", "Click 'Synchronize Identity' below to publish your new avatar.", "info");
-      };
+      triggerToast("Your workspace profile parameters have been successfully synchronized.", "Profile Studio Calibrated ✨", "success");
+    } catch (err) {
+      console.error("General profile update error:", err);
+      triggerToast(
+        err.response?.data?.message || "Could not save changes. Verify network status and try again.", 
+        "Synchronization Error", 
+        "error"
+      );
+    } finally {
+      setIsUpdatingGeneral(false);
     }
   };
 
-  // 2. CHANGE PASSWORD PROTOCOLS
-  const handlePasswordSave = async (e) => {
+  // Handle Security Password Calibration
+  const handleSecuritySubmit = async (e) => {
     e.preventDefault();
-    if (passData.new !== passData.confirm) {
-      showToast("Verification Error", "New passwords do not match. Please verify character entry.", "error");
+    if (!securityForm.currentPassword || !securityForm.newPassword) {
+      triggerToast("Please provide both current and new security credentials.", "Missing Credentials", "info");
       return;
     }
-    if (passData.new.length < 6) {
-      showToast("Security Standard", "New password must contain at least 6 characters.", "error");
+    if (securityForm.newPassword !== securityForm.confirmPassword) {
+      triggerToast("New password values do not match.", "Verification Warning", "error");
       return;
     }
-    setLoading(true);
+    if (securityForm.newPassword.length < 6) {
+      triggerToast("Security standards require a password length of at least 6 characters.", "Weak Password", "error");
+      return;
+    }
+
+    setIsUpdatingSecurity(true);
     try {
-      await API.put("/auth/change-password", {
-        currentPassword: passData.current,
-        newPassword: passData.new
+      await API.put("/auth/password", {
+        currentPassword: securityForm.currentPassword,
+        newPassword: securityForm.newPassword
       });
-      showToast("Security Calibrated 🔐", "Authentication credentials successfully updated across active sessions.", "success");
-      setPassData({ current: '', new: '', confirm: '' });
-    } catch (error) {
-      const msg = error.response?.data?.msg || "Failed to alter security credentials. Verify current password.";
-      showToast("Authentication Denied", msg, "error");
+      triggerToast("Your security clearance credentials have been updated.", "Security Upgraded 🔒", "success");
+      setSecurityForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      console.error("Password change error:", err);
+      triggerToast(
+        err.response?.data?.message || "Password authorization failed. Please check your current password.", 
+        "Security Alert", 
+        "error"
+      );
     } finally {
-      setLoading(false);
+      setIsUpdatingSecurity(false);
     }
   };
 
-  // 3. TERMINATE ACCOUNT PROTOCOLS
+  // Handle Workspace Account Destruction
   const handleDeleteAccount = async () => {
-    const confirmDelete = window.confirm("⚠️ HIGH ALERT: Are you absolutely certain you want to permanently terminate your account and wipe all workspace records? This action is irreversible.");
-    if (confirmDelete) {
-      try {
-        await API.delete("/auth/delete-account");
-        showToast("Account Purged 🗑️", "Terminating active sessions and clearing cloud cache...", "success");
-        setTimeout(() => {
-          logout();
-        }, 1800);
-      } catch (error) {
-        showToast("Termination Error", "Could not complete account deletion protocol at this moment.", "error");
-      }
+    const isConfirmed = window.confirm(
+      "⚠️ EXTREME CAUTION: This will permanently wipe your user profile, active tasks, and encrypted notes from the repository. Proceed?"
+    );
+    if (!isConfirmed) return;
+
+    try {
+      await API.delete("/auth/profile");
+      triggerToast("Workspace account terminated. Purging credentials...", "Farewell 🏁", "error");
+      setTimeout(() => {
+        localStorage.clear();
+        window.location.href = '/';
+      }, 1500);
+    } catch (err) {
+      console.error("Account termination error:", err);
+      triggerToast("Could not process account termination at this time.", "Error Terminating", "error");
     }
   };
-
-  const tabs = [
-    { id: 'general', label: 'Personal Identity & Avatar', icon: User },
-    { id: 'security', label: 'Password & Authentication', icon: ShieldCheck },
-    { id: 'danger', label: 'Danger & Archive Command', icon: Trash, danger: true },
-  ];
 
   const getInitial = () => {
-    const name = profileData.name || user?.name || user?.email || 'U';
+    if (!user) return 'E';
+    const name = user.name || user.email || 'Executive';
     return name.charAt(0).toUpperCase();
   };
 
   return (
     <Layout darkMode={darkMode} toggleTheme={toggleTheme}>
-      <div className="profile-page-wrapper">
+      <div className="profile-studio-wrapper">
         
         {/* =========================================================
             1. EXECUTIVE HERO COMMAND DECK
             ========================================================= */}
         <section className="profile-hero-deck">
           <div className="profile-hero-left">
-            <div className="profile-badge-pill">
+            <div className="executive-badge">
               <Crown size={16} weight="fill" />
-              <span>Executive Account Studio</span>
+              <span>Executive Security & Identity Suite</span>
             </div>
-            <h1 className="profile-hero-title">
-              Profile & <span>Security Command</span>
+            <h1 className="hero-profile-title">
+              Account <span>Studio & Controls</span>
             </h1>
-            <p>Manage personal identity credentials, calibrate multi-layer authentication security protocols, and configure workspace avatar presence.</p>
+            <p className="hero-profile-subtitle">
+              Manage your corporate identity parameters, upgrade cryptographic credentials, and govern repository authorizations.
+            </p>
           </div>
 
-          <div className="profile-hero-stats">
-            <div className="profile-pod">
-              <span>Identity State</span>
-              <strong className="pod-status-verified">Verified ⚡</strong>
+          <div className="profile-kpi-deck">
+            <div className="kpi-pod">
+              <span className="kpi-label">Identity Status</span>
+              <strong className="kpi-value text-emerald">
+                <ShieldCheck size={24} weight="fill" /> Active
+              </strong>
             </div>
-            <div className="profile-pod">
-              <span>Security Shield</span>
-              <strong className="pod-status-enhanced">Enhanced 🛡️</strong>
+            <div className="kpi-pod">
+              <span className="kpi-label">Access Level</span>
+              <strong className="kpi-value text-violet">
+                <Lightning size={24} weight="fill" /> Tier 1
+              </strong>
             </div>
-            <div className="profile-pod">
-              <span>Vault Access</span>
-              <strong className="pod-status-active">Active 🌟</strong>
+            <div className="kpi-pod">
+              <span className="kpi-label">Security Protocol</span>
+              <strong className="kpi-value">256-Bit</strong>
             </div>
           </div>
         </section>
 
         {/* =========================================================
-            2. SETTINGS COMMAND GRID & NAVIGATION BAR
+            2. PROFILE COMMAND WORKSPACE GRID
             ========================================================= */}
-        <div className="settings-command-grid">
+        <div className="profile-command-grid">
           
-          <aside className="settings-nav-sidebar">
-            <h3>Command Navigation</h3>
-            <nav>
-              {tabs.map(tab => (
-                <button 
-                  key={tab.id} 
-                  className={`settings-pill-btn ${activeTab === tab.id ? 'active' : ''} ${tab.danger ? 'danger-pill' : ''}`}
-                  onClick={() => setActiveTab(tab.id)}
-                >
-                  <div className="nav-pill-left">
-                    <tab.icon size={20} weight={activeTab === tab.id ? 'fill' : 'bold'} />
-                    <span>{tab.label}</span>
-                  </div>
-                  {activeTab === tab.id && <CaretRight size={18} weight="bold" />}
-                </button>
-              ))}
-            </nav>
+          {/* --- Left Command Nav Studio --- */}
+          <aside className="profile-nav-studio">
+            <button
+              onClick={() => setActiveTab('general')}
+              className={`studio-tab-btn ${activeTab === 'general' ? 'active' : ''}`}
+            >
+              <div className="tab-content-wrap">
+                <User size={20} weight={activeTab === 'general' ? "fill" : "bold"} />
+                <span>Identity & Avatar</span>
+              </div>
+              <CaretRight size={18} weight="bold" />
+            </button>
+
+            <button
+              onClick={() => setActiveTab('security')}
+              className={`studio-tab-btn ${activeTab === 'security' ? 'active' : ''}`}
+            >
+              <div className="tab-content-wrap">
+                <Lock size={20} weight={activeTab === 'security' ? "fill" : "bold"} />
+                <span>Security Clearance</span>
+              </div>
+              <CaretRight size={18} weight="bold" />
+            </button>
+
+            <button
+              onClick={() => setActiveTab('danger')}
+              className={`studio-tab-btn danger-tab ${activeTab === 'danger' ? 'active' : ''}`}
+            >
+              <div className="tab-content-wrap">
+                <Trash size={20} weight="bold" />
+                <span>Account Deletion</span>
+              </div>
+              <CaretRight size={18} weight="bold" />
+            </button>
           </aside>
 
-          <main className="settings-main-area">
+          {/* --- Right Content Workspace Deck --- */}
+          <div className="profile-content-studio">
             
-            {/* --- TAB 1: GENERAL INFORMATION & AVATAR STUDIO --- */}
+            {/* TAB 1: IDENTITY & AVATAR STUDIO */}
             {activeTab === 'general' && (
-              <div className="settings-studio-card">
-                <div className="studio-card-header">
-                  <h2>
-                    <User size={28} weight="duotone" style={{ color: '#06b6d4' }} />
-                    Personal Identity & Credentials
-                  </h2>
-                  <p>Customize your workspace representation, publish a custom neon avatar, and review authenticated contact parameters.</p>
+              <div>
+                <div className="panel-section-header">
+                  <div className="panel-title-wrap">
+                    <h2>Executive Identity & Avatar</h2>
+                    <p>Customize your personal showcase photograph, public identity moniker, and primary communication channel.</p>
+                  </div>
                 </div>
 
-                <form onSubmit={handleProfileSave} className="profile-studio-form">
+                <form onSubmit={handleGeneralSubmit} className="profile-form-studio">
                   
-                  {/* NEON HALO AVATAR SHOWCASE */}
-                  <div className="photo-showcase-section">
+                  {/* AVATAR SHOWCASE STATION */}
+                  <div className="avatar-showcase-station">
                     <div className="avatar-neon-halo">
-                      <div className="avatar-inner-circle">
-                        {profileData.img ? (
-                          <img src={profileData.img} alt="Executive Avatar" />
-                        ) : (
-                          <span>{getInitial()}</span>
-                        )}
+                      {generalForm.img ? (
+                        <img src={generalForm.img} alt="Avatar Preview" className="showcase-avatar-img" />
+                      ) : (
+                        <div className="showcase-avatar-placeholder">{getInitial()}</div>
+                      )}
+                      <div className="avatar-upload-trigger" title="Live image rendering active">
+                        <Camera size={16} weight="fill" />
                       </div>
                     </div>
-                    
-                    <div className="photo-action-buttons">
-                      <h4 style={{ fontSize: '1.1rem', fontWeight: '800', margin: '0 0 4px', color: 'var(--text-primary)' }}>
-                        Workspace Avatar Presence
-                      </h4>
-                      <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
-                        Supports JPG, PNG, or GIF format. Optimal resolution 400x400px.
-                      </p>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                        <label className="btn-change-photo">
-                          <Camera size={18} weight="bold" /> 
-                          <span>Select Avatar Photo</span>
-                          <input type="file" accept="image/*" onChange={handleImageChange} hidden />
-                        </label>
-
-                        {profileData.img && (
-                          <button 
-                            type="button" 
-                            onClick={() => {
-                              setProfileData(prev => ({ ...prev, img: '' }));
-                              showToast("Avatar Reset", "Default identity emblem applied. Click 'Synchronize' below to confirm.", "info");
-                            }} 
-                            className="btn-remove-photo"
-                            title="Reset to initials emblem"
-                          >
-                            <Trash size={15} weight="bold" /> Remove Photo
-                          </button>
-                        )}
+                    <div className="avatar-guidance-box" style={{ flex: 1, minWidth: '220px' }}>
+                      <h4>Digital Showcase Photograph</h4>
+                      <p>Provide a direct secure web URL (e.g. Unsplash or GitHub avatar) to personalize your workspace brand identity.</p>
+                      <div className="input-with-icon">
+                        <Camera size={18} className="input-prefix-icon" />
+                        <input
+                          type="url"
+                          placeholder="Paste secure image link (https://...)"
+                          value={generalForm.img}
+                          onChange={(e) => setGeneralForm({ ...generalForm, img: e.target.value })}
+                        />
                       </div>
                     </div>
                   </div>
 
-                  {/* FORM FIELDS GRID */}
-                  <div className="profile-form-grid">
-                    <div className="profile-field-group">
-                      <label htmlFor="user-fullname">
-                        <Sparkle size={16} weight="fill" style={{ color: '#a855f7' }} />
-                        Executive Full Name
+                  {/* FORM TWIN FIELDS */}
+                  <div className="form-grid-twin">
+                    <div className="input-capsule">
+                      <label htmlFor="user-name-input">
+                        <User size={16} weight="bold" /> Full Executive Moniker *
                       </label>
-                      <input 
-                        id="user-fullname"
-                        type="text" 
-                        value={profileData.name} 
-                        onChange={e => setProfileData({...profileData, name: e.target.value})}
-                        className="profile-studio-input"
-                        placeholder="Enter your professional display name"
-                        required
-                      />
+                      <div className="input-with-icon">
+                        <User size={18} className="input-prefix-icon" />
+                        <input
+                          id="user-name-input"
+                          type="text"
+                          required
+                          value={generalForm.name}
+                          onChange={(e) => setGeneralForm({ ...generalForm, name: e.target.value })}
+                          placeholder="e.g. Trupti Parmar"
+                        />
+                      </div>
                     </div>
 
-                    <div className="profile-field-group">
-                      <label htmlFor="user-email-disabled">
-                        <Envelope size={16} weight="fill" style={{ color: '#6366f1' }} />
-                        Authenticated Primary Email
+                    <div className="input-capsule">
+                      <label htmlFor="user-email-input">
+                        <Envelope size={16} weight="bold" /> Communication Address *
                       </label>
-                      <div className="profile-input-disabled" title="Primary authentication email address cannot be modified directly for security compliance.">
-                        <Lock size={18} style={{ color: '#6366f1', flexShrink: 0 }} />
-                        <input id="user-email-disabled" type="text" value={user?.email || 'authenticated@workspace.dev'} disabled />
+                      <div className="input-with-icon">
+                        <Envelope size={18} className="input-prefix-icon" />
+                        <input
+                          id="user-email-input"
+                          type="email"
+                          required
+                          value={generalForm.email}
+                          onChange={(e) => setGeneralForm({ ...generalForm, email: e.target.value })}
+                          placeholder="e.g. executive@workspace.dev"
+                        />
                       </div>
                     </div>
                   </div>
 
-                  <div className="studio-form-actions">
-                    <button type="submit" className="btn-studio-save" disabled={loading}>
-                      <Lightning size={22} weight="fill" />
-                      <span>{loading ? 'Synchronizing Data...' : 'Synchronize Identity ⚡'}</span>
+                  <div className="profile-action-footer">
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        if (user) setGeneralForm({ name: user.name || '', email: user.email || '', img: user.img || '' });
+                        triggerToast("Form reset to currently archived profile state.", "Reversed Revisions", "info");
+                      }} 
+                      className="btn-studio-secondary"
+                    >
+                      Discard Changes
+                    </button>
+
+                    <button type="submit" disabled={isUpdatingGeneral} className="btn-studio-primary">
+                      {isUpdatingGeneral ? (
+                        <><span>Synchronizing Vault...</span></>
+                      ) : (
+                        <>
+                          <Sparkle size={18} weight="fill" />
+                          <span>Commit Identity Updates</span>
+                        </>
+                      )}
                     </button>
                   </div>
+
                 </form>
               </div>
             )}
 
-            {/* --- TAB 2: SECURITY & PASSWORD COMMAND --- */}
+            {/* TAB 2: SECURITY CLEARANCE STUDIO */}
             {activeTab === 'security' && (
-              <div className="settings-studio-card">
-                <div className="studio-card-header">
-                  <h2>
-                    <ShieldCheck size={28} weight="duotone" style={{ color: '#10b981' }} />
-                    Password & Security Calibration
-                  </h2>
-                  <p>Enhance workspace resilience by cycling your cryptographic login token and auditing session verification protocols.</p>
+              <div>
+                <div className="panel-section-header">
+                  <div className="panel-title-wrap">
+                    <h2>Cryptographic Clearance & Credentials</h2>
+                    <p>Upgrade your authentication password to preserve strict security across your workspace and cloud tasks.</p>
+                  </div>
                 </div>
 
-                <form onSubmit={handlePasswordSave} className="profile-studio-form">
-                  
-                  <div className="security-notice-box">
-                    <Info size={24} weight="fill" style={{ color: '#6366f1', flexShrink: 0 }} />
-                    <div>
-                      <strong style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '3px' }}>Security Best Practice Recommendation</strong>
-                      To safeguard executive tasks and notes, construct an alphanumeric password of at least 8 characters containing upper/lowercase symbols and numbers.
+                <form onSubmit={handleSecuritySubmit} className="profile-form-studio">
+                  <div style={{ padding: '1.25rem 1.5rem', background: 'var(--bg-accent-subtle)', borderRadius: '14px', borderLeft: '4px solid var(--primary)', marginBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.92rem', marginBottom: '4px' }}>
+                      <Shield size={18} weight="fill" />
+                      <span>Zero-Knowledge Security Standard</span>
                     </div>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      Your credentials are cryptographically hashed using advanced salting protocols before persisting to the cluster.
+                    </p>
                   </div>
 
-                  <div className="profile-field-group" style={{ maxWidth: '100%' }}>
-                    <label htmlFor="pass-current">
-                      <Key size={16} weight="fill" style={{ color: '#f59e0b' }} />
-                      Current Authentication Password
+                  <div className="input-capsule">
+                    <label htmlFor="current-pass-input">
+                      <Key size={16} weight="bold" /> Current Secret Key *
                     </label>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                      <input 
-                        id="pass-current"
-                        type={showPassword.current ? "text" : "password"} 
-                        value={passData.current}
-                        onChange={e => setPassData({...passData, current: e.target.value})}
-                        className="profile-studio-input"
-                        style={{ paddingRight: '3.2rem' }}
-                        placeholder="Enter current active account password"
+                    <div className="input-with-icon">
+                      <Lock size={18} className="input-prefix-icon" />
+                      <input
+                        id="current-pass-input"
+                        type={showCurrentPassword ? "text" : "password"}
                         required
+                        value={securityForm.currentPassword}
+                        onChange={(e) => setSecurityForm({ ...securityForm, currentPassword: e.target.value })}
+                        placeholder="Enter currently active password..."
                       />
-                      <button 
-                        type="button" 
-                        onClick={() => setShowPassword(p => ({ ...p, current: !p.current }))}
-                        style={{ position: 'absolute', right: '1.2rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                        title={showPassword.current ? "Hide password" : "Show password"}
-                      >
-                        {showPassword.current ? <EyeSlash size={20} /> : <Eye size={20} />}
+                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="password-eye-toggle" title="Toggle password visibility">
+                        {showCurrentPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                   </div>
 
-                  <div className="profile-form-grid">
-                    <div className="profile-field-group">
-                      <label htmlFor="pass-new">
-                        <Lock size={16} weight="fill" style={{ color: '#10b981' }} />
-                        New Cryptographic Password
+                  <div className="form-grid-twin">
+                    <div className="input-capsule">
+                      <label htmlFor="new-pass-input">
+                        <Lock size={16} weight="bold" /> New Secret Key *
                       </label>
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                        <input 
-                          id="pass-new"
-                          type={showPassword.new ? "text" : "password"} 
-                          value={passData.new}
-                          onChange={e => setPassData({...passData, new: e.target.value})}
-                          className="profile-studio-input"
-                          style={{ paddingRight: '3.2rem' }}
-                          placeholder="Construct new strong password"
+                      <div className="input-with-icon">
+                        <Lock size={18} className="input-prefix-icon" />
+                        <input
+                          id="new-pass-input"
+                          type={showNewPassword ? "text" : "password"}
                           required
+                          value={securityForm.newPassword}
+                          onChange={(e) => setSecurityForm({ ...securityForm, newPassword: e.target.value })}
+                          placeholder="Min. 6 characters required..."
                         />
-                        <button 
-                          type="button" 
-                          onClick={() => setShowPassword(p => ({ ...p, new: !p.new }))}
-                          style={{ position: 'absolute', right: '1.2rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                        >
-                          {showPassword.new ? <EyeSlash size={20} /> : <Eye size={20} />}
+                        <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="password-eye-toggle" title="Toggle password visibility">
+                          {showNewPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
                         </button>
                       </div>
                     </div>
 
-                    <div className="profile-field-group">
-                      <label htmlFor="pass-confirm">
-                        <Shield size={16} weight="fill" style={{ color: '#6366f1' }} />
-                        Verify New Password
+                    <div className="input-capsule">
+                      <label htmlFor="confirm-pass-input">
+                        <CheckCircle size={16} weight="bold" /> Confirm Secret Key *
                       </label>
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                        <input 
-                          id="pass-confirm"
-                          type={showPassword.confirm ? "text" : "password"} 
-                          value={passData.confirm}
-                          onChange={e => setPassData({...passData, confirm: e.target.value})}
-                          className="profile-studio-input"
-                          style={{ paddingRight: '3.2rem' }}
-                          placeholder="Re-type new password to verify"
+                      <div className="input-with-icon">
+                        <Lock size={18} className="input-prefix-icon" />
+                        <input
+                          id="confirm-pass-input"
+                          type={showConfirmPassword ? "text" : "password"}
                           required
+                          value={securityForm.confirmPassword}
+                          onChange={(e) => setSecurityForm({ ...securityForm, confirmPassword: e.target.value })}
+                          placeholder="Re-type new password..."
                         />
-                        <button 
-                          type="button" 
-                          onClick={() => setShowPassword(p => ({ ...p, confirm: !p.confirm }))}
-                          style={{ position: 'absolute', right: '1.2rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                        >
-                          {showPassword.confirm ? <EyeSlash size={20} /> : <Eye size={20} />}
+                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="password-eye-toggle" title="Toggle password visibility">
+                          {showConfirmPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="studio-form-actions">
-                    <button type="submit" className="btn-studio-save" disabled={loading}>
-                      <ShieldCheck size={22} weight="fill" />
-                      <span>{loading ? 'Securing Vault...' : 'Calibrate Security 🔐'}</span>
+                  <div className="profile-action-footer">
+                    <button type="submit" disabled={isUpdatingSecurity} className="btn-studio-primary">
+                      {isUpdatingSecurity ? (
+                        <><span>Upgrading Security...</span></>
+                      ) : (
+                        <>
+                          <ShieldCheck size={18} weight="fill" />
+                          <span>Upgrade Cryptographic Credentials</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>
               </div>
             )}
 
-            {/* --- TAB 3: DANGER & ARCHIVE COMMAND --- */}
+            {/* TAB 3: ACCOUNT DESTRUCT DANGER ZONE */}
             {activeTab === 'danger' && (
-              <div className="settings-studio-card danger-card-border">
-                <div className="studio-card-header">
-                  <h2>
-                    <WarningCircle size={28} weight="duotone" style={{ color: '#ef4444' }} />
-                    Danger & Archive Command
-                  </h2>
-                  <p>Execute irreversible account operations and manage terminal workspace data purging protocols.</p>
+              <div>
+                <div className="panel-section-header">
+                  <div className="panel-title-wrap">
+                    <h2 style={{ color: 'var(--danger)' }}>Account Destruction Station</h2>
+                    <p>Execute permanent termination of your user clearance and obliterate all archived milestones.</p>
+                  </div>
                 </div>
 
-                <div className="danger-studio-box">
-                  <div className="danger-text-area">
-                    <h3>Terminate Workspace Identity</h3>
+                <div className="danger-zone-container">
+                  <div className="danger-info-block">
+                    <h3>
+                      <WarningCircle size={26} weight="fill" />
+                      Irreversible Termination Protocol
+                    </h3>
                     <p>
-                      Permanently delete your account profile, wipe all associated task repositories, notes, and cloud metadata. 
-                      <strong> Once triggered, this protocol cannot be undone.</strong>
+                      Initiating account destruction will purge your profile, remove cryptographic authorizations, and permanently erase all task records from our cloud database. This operation cannot be undone.
                     </p>
                   </div>
-                  <button className="btn-delete-executive" onClick={handleDeleteAccount} title="Execute permanent account removal">
-                    <Trash size={22} weight="bold" />
-                    <span>Terminate Account</span>
+
+                  <button onClick={handleDeleteAccount} className="btn-destroy-workspace">
+                    <Trash size={20} weight="bold" />
+                    <span>Obliterate Workspace Account</span>
                   </button>
                 </div>
               </div>
             )}
 
-          </main>
-        </div>
-
-        {/* =========================================================
-            STATE-OF-THE-ART LUXURY GLASS TOAST SYSTEM
-            ========================================================= */}
-        {toast.show && (
-          <div className="luxury-toast">
-            <div className={`toast-badge-icon toast-${toast.type}-badge`}>
-              {toast.type === 'success' && <CheckCircle size={24} weight="fill" />}
-              {toast.type === 'error' && <XCircle size={24} weight="fill" />}
-              {toast.type === 'info' && <Info size={24} weight="fill" />}
-            </div>
-            
-            <div className="toast-details">
-              <h4>{toast.title || (toast.type === 'error' ? 'Security Alert' : 'Success')}</h4>
-              <p>{toast.message}</p>
-            </div>
           </div>
-        )}
+
+        </div>
 
       </div>
     </Layout>

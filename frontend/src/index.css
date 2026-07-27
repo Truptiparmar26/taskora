@@ -10,18 +10,30 @@
   --bg-body: #F8FAFC;
   --bg-sidebar: #FFFFFF;
   --bg-card: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --bg-hover: #F1F5F9;
   --text-primary: #0F172A;
+  --text-main: #0F172A;
   --text-secondary: #475569;
+  --text-muted: #64748B;
   --border: #E2E8F0;
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
 }
 
 .dark-mode {
   --bg-body: #090D16;
   --bg-sidebar: #0F1626;
   --bg-card: #131B2E;
+  --card-bg: #131B2E;
+  --bg-hover: #1E293B;
   --text-primary: #F8FAFC;
+  --text-main: #F8FAFC;
   --text-secondary: #A1A9C0;
+  --text-muted: #94A3B8;
   --border: rgba(255, 255, 255, 0.08);
+  --primary: #6366F1;
+  --primary-hover: #4F46E5;
 }
 
 * {
@@ -93,4 +105,10 @@ p {
   padding: 1.5rem;
   min-height: 350px;
   box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import TaskoraLogo from "../components/TaskoraLogo";
 
 function Register() {
@@ -10,6 +11,7 @@ function Register() {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { showToast } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,16 +20,22 @@ function Register() {
 
     try {
       await API.post("/auth/register", form);
-      // Upon successful registration, navigate to Login page
+      if (showToast) {
+        showToast("Account successfully registered! Please sign in to launch your workspace.", "Registration Complete ✨", "success");
+      }
       navigate("/");
     } catch (err) {
       console.error("Registration error details:", err);
-      // Capture the exact warning or error message sent by the backend server
-      const serverMessage = 
-        err.response?.data?.msg || 
-        err.response?.data?.message || 
-        "Registration failed. Please verify your details and try again.";
+      let serverMessage = err.response?.data?.msg || err.response?.data?.message;
+      if (!serverMessage) {
+        serverMessage = !err.response || err.message === "Network Error"
+          ? "⚠️ Cannot connect to backend server. Please ensure your backend server (node server.js) is active on port 5000."
+          : "Registration failed. Please verify your details and try again.";
+      }
       setError(serverMessage);
+      if (showToast) {
+        showToast(serverMessage, "Registration Alert ⚠️", "error");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -37,8 +45,8 @@ function Register() {
     <div className="min-h-[100dvh] w-full flex flex-col lg:flex-row bg-[#0A0E1A] text-white font-sans relative overflow-y-auto selection:bg-indigo-500 selection:text-white">
       
       {/* Ambient Background Gradient Glows */}
-      <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-indigo-600/20 to-purple-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow"></div>
-      <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-tr from-purple-600/20 to-pink-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow"></div>
+      <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-indigo-600/20 to-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-tr from-purple-600/20 to-pink-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
       {/* --- LEFT SIDE BRANDING HERO (Desktop Only) --- */}
       <div className="hidden lg:flex w-1/2 flex-col justify-center items-center p-16 relative z-10 border-r border-slate-800/60">
@@ -78,9 +86,8 @@ function Register() {
 
       {/* --- RIGHT SIDE (Registration Form) --- */}
       <div className="flex-1 w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-14 relative z-10 my-auto">
-        <div className="w-full max-w-md bg-[#111827]/90 backdrop-blur-2xl border border-slate-800/80 rounded-[28px] p-8 sm:p-10 shadow-2xl shadow-black/40 animate-fade-in-up relative overflow-hidden">
+        <div className="w-full max-w-md bg-[#111827]/90 backdrop-blur-2xl border border-slate-800/80 rounded-[28px] p-8 sm:p-10 shadow-2xl shadow-black/40 relative overflow-hidden">
           
-          {/* Subtle Accent Edge Glow on top of card */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80"></div>
 
           {/* Mobile Logo Header */}
@@ -96,14 +103,14 @@ function Register() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* --- EXPLICIT, SPECIFIC ERROR & WARNING ALERT BOX --- */}
+            {/* --- EXPLICIT, SPECIFIC ERROR WARNING ALERT BOX --- */}
             {error && (
-              <div className="flex items-start gap-3.5 p-4 bg-gradient-to-r from-red-950/80 via-red-900/40 to-red-950/80 border border-red-500/40 rounded-2xl text-red-200 text-sm shadow-lg shadow-red-950/50 animate-shake backdrop-blur-md">
-                <div className="w-6 h-6 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0 mt-0.5 font-bold">
+              <div className="flex items-start gap-3.5 p-4 bg-gradient-to-r from-amber-950/80 via-red-900/40 to-red-950/80 border border-amber-500/40 rounded-2xl text-red-200 text-sm shadow-lg shadow-red-950/50 backdrop-blur-md">
+                <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 mt-0.5 font-bold">
                   !
                 </div>
                 <div className="flex-1">
-                  <span className="font-bold text-red-300 block mb-0.5">Registration Attention</span>
+                  <span className="font-bold text-amber-300 block mb-0.5">Registration Alert</span>
                   <span className="leading-relaxed opacity-95">{error}</span>
                 </div>
               </div>
@@ -163,7 +170,7 @@ function Register() {
                 htmlFor="password"
                 className="absolute left-4 top-2 text-slate-400 text-xs font-semibold uppercase tracking-wider transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-placeholder-shown:normal-case peer-focus:top-2 peer-focus:text-xs peer-focus:font-semibold peer-focus:uppercase peer-focus:text-indigo-400 pointer-events-none z-10 bg-[#111827] px-1.5 rounded"
               >
-                Password
+                Create Password
               </label>
               
               <button
@@ -175,7 +182,7 @@ function Register() {
                 {showPassword ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10-7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                 )}
               </button>
             </div>
@@ -184,7 +191,7 @@ function Register() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/45 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2.5 mt-2 text-base"
+              className="w-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/45 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 mt-2 text-base"
             >
               {isLoading ? (
                 <>
@@ -192,11 +199,11 @@ function Register() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creating Your Account...
+                  Registering...
                 </>
               ) : (
                 <>
-                  <span>Create Free Account</span>
+                  <span>Create Account & Start</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </>
               )}
@@ -204,30 +211,16 @@ function Register() {
           </form>
 
           <div className="mt-8 text-center text-sm text-slate-400 border-t border-slate-800/80 pt-6">
-            Already registered with an account?{" "}
+            Already registered?{" "}
             <span
               className="text-indigo-400 font-bold hover:text-indigo-300 cursor-pointer transition-colors inline-flex items-center gap-1 hover:underline"
               onClick={() => navigate("/")}
             >
-              Sign In Here →
+              Sign In to Workspace →
             </span>
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes fade-in-up {
-          0% { opacity: 0; transform: translateY(15px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          20%, 60% { transform: translateX(-4px); }
-          40%, 80% { transform: translateX(4px); }
-        }
-        .animate-fade-in-up { animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-shake { animation: shake 0.5s ease-in-out; }
-      `}</style>
     </div>
   );
 }

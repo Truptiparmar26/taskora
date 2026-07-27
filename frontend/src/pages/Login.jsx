@@ -11,7 +11,7 @@ function Login() {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, showToast } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,14 +21,22 @@ function Login() {
     try {
       const res = await API.post("/auth/login", form);
       login(res.data);
+      if (showToast) {
+        showToast(`Welcome back, ${res.data?.user?.name || "Executive"}! Entering Command Deck.`, "Login Successful 🚀", "success");
+      }
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error details:", err);
-      const serverMessage = 
-        err.response?.data?.msg || 
-        err.response?.data?.message || 
-        "Unable to authenticate. Please check your credentials and try again.";
+      let serverMessage = err.response?.data?.msg || err.response?.data?.message;
+      if (!serverMessage) {
+        serverMessage = !err.response || err.message === "Network Error"
+          ? "⚠️ Cannot connect to backend server. Please ensure your backend server (node server.js) is active on port 5000."
+          : "Unable to authenticate. Please check your credentials and try again.";
+      }
       setError(serverMessage);
+      if (showToast) {
+        showToast(serverMessage, "Authentication Alert ⚠️", "error");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -38,8 +46,8 @@ function Login() {
     <div className="min-h-[100dvh] w-full flex flex-col lg:flex-row bg-[#0A0E1A] text-white font-sans relative overflow-y-auto selection:bg-indigo-500 selection:text-white">
       
       {/* Ambient Background Gradient Glows */}
-      <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-indigo-600/20 to-purple-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow"></div>
-      <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-tr from-purple-600/20 to-pink-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow"></div>
+      <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-indigo-600/20 to-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-tr from-purple-600/20 to-pink-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
       {/* --- LEFT SIDE BRANDING HERO (Desktop Only) --- */}
       <div className="hidden lg:flex w-1/2 flex-col justify-center items-center p-16 relative z-10 border-r border-slate-800/60">
@@ -75,9 +83,8 @@ function Login() {
 
       {/* --- RIGHT SIDE (Login Form) --- */}
       <div className="flex-1 w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-14 relative z-10 my-auto">
-        <div className="w-full max-w-md bg-[#111827]/90 backdrop-blur-2xl border border-slate-800/80 rounded-[28px] p-8 sm:p-10 shadow-2xl shadow-black/40 animate-fade-in-up relative overflow-hidden">
+        <div className="w-full max-w-md bg-[#111827]/90 backdrop-blur-2xl border border-slate-800/80 rounded-[28px] p-8 sm:p-10 shadow-2xl shadow-black/40 relative overflow-hidden">
           
-          {/* Subtle Accent Edge Glow on top of card */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80"></div>
 
           {/* Mobile Logo Header */}
@@ -95,7 +102,7 @@ function Login() {
             
             {/* --- EXPLICIT, SPECIFIC ERROR WARNING TOAST --- */}
             {error && (
-              <div className="flex items-start gap-3.5 p-4 bg-gradient-to-r from-red-950/80 via-red-900/40 to-red-950/80 border border-red-500/40 rounded-2xl text-red-200 text-sm shadow-lg shadow-red-950/50 animate-shake backdrop-blur-md">
+              <div className="flex items-start gap-3.5 p-4 bg-gradient-to-r from-red-950/80 via-red-900/40 to-red-950/80 border border-red-500/40 rounded-2xl text-red-200 text-sm shadow-lg shadow-red-950/50 backdrop-blur-md">
                 <div className="w-6 h-6 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0 mt-0.5 font-bold">
                   !
                 </div>
@@ -161,7 +168,7 @@ function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/45 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2.5 mt-2 text-base"
+              className="w-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/45 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 mt-2 text-base"
             >
               {isLoading ? (
                 <>
@@ -191,20 +198,6 @@ function Login() {
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes fade-in-up {
-          0% { opacity: 0; transform: translateY(15px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          20%, 60% { transform: translateX(-4px); }
-          40%, 80% { transform: translateX(4px); }
-        }
-        .animate-fade-in-up { animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-shake { animation: shake 0.5s ease-in-out; }
-      `}</style>
     </div>
   );
 }
