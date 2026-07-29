@@ -121,8 +121,13 @@
   color: var(--text-primary);
 }
 
-.mini-val.text-amber { color: var(--warning); }
-.mini-val.text-emerald { color: var(--success); }
+.mini-val.text-amber {
+  color: var(--warning);
+}
+
+.mini-val.text-emerald {
+  color: var(--success);
+}
 
 /* ==========================================================================
    2. INTERACTIVE CONTROLS & FILTER HUB
@@ -325,9 +330,17 @@
   transition: var(--transition);
 }
 
-.task-pod.in-progress::before { background: var(--info); }
-.task-pod.completed::before { background: var(--success); }
-.task-pod.completed { opacity: 0.88; }
+.task-pod.in-progress::before {
+  background: var(--info);
+}
+
+.task-pod.completed::before {
+  background: var(--success);
+}
+
+.task-pod.completed {
+  opacity: 0.88;
+}
 
 .task-pod:hover {
   transform: translateY(-6px);
@@ -355,9 +368,20 @@
   letter-spacing: 0.03em;
 }
 
-.chip-high { background: var(--danger-light); color: var(--danger); }
-.chip-medium { background: var(--warning-light); color: var(--warning); }
-.chip-low { background: var(--info-light); color: var(--info); }
+.chip-high {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.chip-medium {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.chip-low {
+  background: var(--info-light);
+  color: var(--info);
+}
 
 .pod-quick-actions {
   display: flex;
@@ -378,8 +402,17 @@
   transition: var(--transition);
 }
 
-.edit-btn:hover { background: var(--info-light); color: var(--info); transform: scale(1.08); }
-.del-btn:hover { background: var(--danger-light); color: var(--danger); transform: scale(1.08); }
+.edit-btn:hover {
+  background: var(--info-light);
+  color: var(--info);
+  transform: scale(1.08);
+}
+
+.del-btn:hover {
+  background: var(--danger-light);
+  color: var(--danger);
+  transform: scale(1.08);
+}
 
 .pod-body {
   margin-bottom: 1.5rem;
@@ -445,11 +478,27 @@
   transition: var(--transition);
 }
 
-.select-pending { background: var(--warning-light); color: var(--warning); border-color: transparent; }
-.select-in-progress { background: var(--info-light); color: var(--info); border-color: transparent; }
-.select-completed { background: var(--success-light); color: var(--success); border-color: transparent; }
+.select-pending {
+  background: var(--warning-light);
+  color: var(--warning);
+  border-color: transparent;
+}
 
-.status-selector:hover { transform: scale(1.04); }
+.select-in-progress {
+  background: var(--info-light);
+  color: var(--info);
+  border-color: transparent;
+}
+
+.select-completed {
+  background: var(--success-light);
+  color: var(--success);
+  border-color: transparent;
+}
+
+.status-selector:hover {
+  transform: scale(1.04);
+}
 
 /* ==========================================================================
    4. DEPLOY TARGET MODAL DIALOGUE
@@ -471,8 +520,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-command-box {
@@ -487,8 +541,15 @@
 }
 
 @keyframes modalSlideUp {
-  from { opacity: 0; transform: translateY(25px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-header-line {
@@ -598,7 +659,10 @@
   transition: var(--transition);
 }
 
-.btn-cancel:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.btn-cancel:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
 
 .btn-submit-studio {
   background: var(--primary-gradient);
@@ -615,7 +679,10 @@
   transition: var(--transition);
 }
 
-.btn-submit-studio:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -2px rgba(99, 102, 241, 0.5); }
+.btn-submit-studio:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -2px rgba(99, 102, 241, 0.5);
+}
 
 /* ==========================================================================
    5. STATE-OF-THE-ART LUXURY GLASS TOAST SYSTEM
@@ -640,8 +707,15 @@
 }
 
 @keyframes toastSlideIn {
-  from { opacity: 0; transform: translateX(50px) scale(0.9); }
-  to { opacity: 1; transform: translateX(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateX(50px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
 
 .toast-badge-icon {
@@ -654,9 +728,23 @@
   flex-shrink: 0;
 }
 
-.toast-success-badge { background: var(--success-light); color: var(--success); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
-.toast-error-badge { background: var(--danger-light); color: var(--danger); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
-.toast-info-badge { background: var(--info-light); color: var(--info); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
+.toast-success-badge {
+  background: var(--success-light);
+  color: var(--success);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.toast-error-badge {
+  background: var(--danger-light);
+  color: var(--danger);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.toast-info-badge {
+  background: var(--info-light);
+  color: var(--info);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
 
 .toast-details h4 {
   font-size: 0.96rem;
@@ -676,29 +764,104 @@
    6. FOOLPROOF RESPONSIVE ADAPTATIONS (ZERO CUTOFFS FOREVER)
    ========================================================================== */
 @media (max-width: 1200px) {
-  .task-grid-premium { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
-  .workspace-hero-deck { padding: 1.5rem; gap: 1.5rem; flex-direction: column; align-items: flex-start; }
+  .task-grid-premium {
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  }
+
+  .workspace-hero-deck {
+    padding: 1.5rem;
+    gap: 1.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 @media (max-width: 768px) {
-  .controls-hub { flex-direction: column; align-items: stretch; gap: 1rem; }
-  .search-studio { max-width: 100%; min-width: 100%; }
-  .action-bar-right { flex-direction: column; align-items: stretch; gap: 0.85rem; }
-  .filter-studio-tabs { overflow-x: auto; padding: 4px; justify-content: flex-start; -webkit-overflow-scrolling: touch; }
-  .btn-deploy-task { justify-content: center; }
-  .task-grid-premium { grid-template-columns: 1fr; gap: 1.25rem; }
-  .form-row-twin { grid-template-columns: 1fr; }
-  .modal-command-box { max-width: 100%; border-radius: 20px; }
-  .modal-studio-form { padding: 1.5rem; }
-  .hero-deck-stats { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-  .mini-stat-card { min-width: 0; padding: 0.75rem 0.5rem; }
-  .mini-val { font-size: 1.3rem; }
-  .mini-label { font-size: 0.68rem; }
+  .controls-hub {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .search-studio {
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .action-bar-right {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .filter-studio-tabs {
+    overflow-x: auto;
+    padding: 4px;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .btn-deploy-task {
+    justify-content: center;
+  }
+
+  .task-grid-premium {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .form-row-twin {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-command-box {
+    max-width: 100%;
+    border-radius: 20px;
+  }
+
+  .modal-studio-form {
+    padding: 1.5rem;
+  }
+
+  .hero-deck-stats {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+  }
+
+  .mini-stat-card {
+    min-width: 0;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .mini-val {
+    font-size: 1.3rem;
+  }
+
+  .mini-label {
+    font-size: 0.68rem;
+  }
 }
 
 @media (max-width: 480px) {
-  .hero-deck-stats { grid-template-columns: 1fr; }
-  .deck-title { font-size: 1.6rem; }
-  .pod-footer { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
-  .pod-status-controls, .status-selector { width: 100%; text-align: center; }
+  .hero-deck-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .deck-title {
+    font-size: 1.6rem;
+  }
+
+  .pod-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .pod-status-controls,
+  .status-selector {
+    width: 100%;
+    text-align: center;
+  }
 }
