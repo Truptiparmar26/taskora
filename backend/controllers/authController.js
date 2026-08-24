@@ -98,7 +98,7 @@ exports.updateProfile = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id, 
       updateData, 
-      { new: true }
+      { returnDocument: 'after' }
     );
     
     if (!updatedUser) {

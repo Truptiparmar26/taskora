@@ -14,6 +14,8 @@ const noteSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // CHANGED from 'user'
   title: { type: String, default: "Untitled" },
   content: { type: String, required: true },
+  category: { type: String, default: "Work" },
+  tagColor: { type: String, default: "#6366f1" },
   tags: [{ type: String }],
   color: { type: String, default: "#ffffff" },
   isPinned: { type: Boolean, default: false },

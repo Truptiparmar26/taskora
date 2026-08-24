@@ -42,11 +42,11 @@ exports.deleteNote = async (req, res) => {
 // Update Note
 exports.updateNote = async (req, res) => {
   try {
-    const { title, content, color, tags, isPinned } = req.body;
+    const { title, content, color, tags, isPinned, tagColor, category } = req.body;
     const updatedNote = await Note.findByIdAndUpdate(
       req.params.id,
-      { title, content, color, tags, isPinned },
-      { new: true }
+      { title, content, color, tags, isPinned, tagColor, category },
+      { returnDocument: 'after' }
     );
     if (!updatedNote) return res.status(404).json({ msg: "Note not found" });
     res.json(updatedNote);

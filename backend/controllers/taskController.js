@@ -75,7 +75,7 @@ exports.updateTask = async (req, res) => {
     const task = await Task.findOneAndUpdate(
       { _id: req.params.id, userId }, 
       updateData, 
-      { new: true, runValidators: false }
+      { returnDocument: 'after', runValidators: false }
     );
     if (!task) {
       return res.status(404).json({ msg: "Task record not found or unauthorized." });

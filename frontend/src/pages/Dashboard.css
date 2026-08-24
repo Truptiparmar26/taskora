@@ -315,6 +315,12 @@ html, body {
   align-items: center;
   gap: 1.25rem;
   min-width: 0;
+  flex: 1;
+}
+
+.header-title-box {
+  min-width: 0;
+  flex: 1;
 }
 
 .header-left h2 { font-size: 1.35rem; margin-bottom: 0.15rem; font-weight: 700; color: var(--text-primary); }

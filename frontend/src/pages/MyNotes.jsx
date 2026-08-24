@@ -200,41 +200,68 @@ export default function MyNotes({ darkMode, toggleTheme }) {
             </div>
           ) : (
             filteredNotes.map(note => (
-              <div key={note._id} className="task-pod" style={{ borderLeft: `4px solid ${note.tagColor || '#a855f7'}` }}>
+              <div key={note._id} className="task-pod">
+                <div style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: '4px',
+                  background: note.tagColor || '#a855f7',
+                  zIndex: 1
+                }} />
                 
-                {/* NOTE POD TOP SECTION */}
-                <div className="pod-header">
-                  <span className={`badge-pill ${getCategoryTheme(note.category)}`} style={{ fontSize: '0.74rem' }}>
-                    <Tag size={13} weight="fill" />
-                    {note.category || 'General'}
-                  </span>
+                {/* Premium Glowing Orb effect based on chosen color */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-40px',
+                  left: '-40px',
+                  width: '180px',
+                  height: '180px',
+                  background: note.tagColor || '#a855f7',
+                  filter: 'blur(55px)',
+                  opacity: 0.18,
+                  zIndex: 0,
+                  pointerEvents: 'none',
+                  borderRadius: '50%'
+                }} />
 
-                  <div className="pod-quick-actions">
-                    <button onClick={() => openEditModal(note)} className="icon-action-btn edit-btn" title="Revise note content">
-                      <PencilSimple size={18} weight="bold" />
-                    </button>
-                    <button onClick={() => handleDelete(note._id)} className="icon-action-btn del-btn" title="Purge memorandum from vault">
-                      <Trash size={18} weight="bold" />
-                    </button>
+                {/* Content Wrapper to sit above the glow */}
+                <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  {/* NOTE POD TOP SECTION */}
+                  <div className="pod-header">
+                    <span className={`badge-pill ${getCategoryTheme(note.category)}`} style={{ fontSize: '0.74rem' }}>
+                      <Tag size={13} weight="fill" />
+                      {note.category || 'General'}
+                    </span>
+
+                    <div className="pod-quick-actions">
+                      <button onClick={() => openEditModal(note)} className="icon-action-btn edit-btn" title="Revise note content">
+                        <PencilSimple size={18} weight="bold" />
+                      </button>
+                      <button onClick={() => handleDelete(note._id)} className="icon-action-btn del-btn" title="Purge memorandum from vault">
+                        <Trash size={18} weight="bold" />
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                {/* NOTE POD BODY SECTION */}
-                <div className="pod-body" style={{ minHeight: '80px' }}>
-                  <h3 className="pod-title">{note.title}</h3>
-                  <p className="pod-desc" style={{ whiteSpace: 'pre-line' }}>{note.content}</p>
-                </div>
-
-                {/* NOTE POD FOOTER SECTION */}
-                <div className="pod-footer" style={{ borderTop: '1px dashed var(--border)' }}>
-                  <div className="pod-meta">
-                    <Calendar size={16} weight="bold" />
-                    <span>Archived {formatDate(note.createdAt || note.updatedAt)}</span>
+                  {/* NOTE POD BODY SECTION */}
+                  <div className="pod-body" style={{ minHeight: '80px', flex: 1 }}>
+                    <h3 className="pod-title">{note.title}</h3>
+                    <p className="pod-desc" style={{ whiteSpace: 'pre-line' }}>{note.content}</p>
                   </div>
-                  
-                  <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                    Encrypted Vault
-                  </span>
+
+                  {/* NOTE POD FOOTER SECTION */}
+                  <div className="pod-footer" style={{ borderTop: '1px dashed var(--border)', marginTop: 'auto' }}>
+                    <div className="pod-meta">
+                      <Calendar size={16} weight="bold" />
+                      <span>Archived {formatDate(note.createdAt || note.updatedAt)}</span>
+                    </div>
+                    
+                    <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                      Encrypted Vault
+                    </span>
+                  </div>
                 </div>
 
               </div>
@@ -294,7 +321,7 @@ export default function MyNotes({ darkMode, toggleTheme }) {
                   <div className="form-group-item">
                     <label>Accent Tag Color</label>
                     <div style={{ display: 'flex', gap: '8px', paddingTop: '6px' }}>
-                      {['#6366f1', '#a855f7', '#10b981', '#f59e0b', '#ef4444'].map(col => (
+                      {['#6366f1', '#a855f7', '#10b981', '#f59e0b', '#ef4444', 'linear-gradient(180deg, #a855f7 0%, #f59e0b 50%, #ef4444 100%)'].map(col => (
                         <div 
                           key={col}
                           onClick={() => setFormData({ ...formData, tagColor: col })}
@@ -302,7 +329,7 @@ export default function MyNotes({ darkMode, toggleTheme }) {
                             width: '28px',
                             height: '28px',
                             borderRadius: '50%',
-                            backgroundColor: col,
+                            background: col,
                             cursor: 'pointer',
                             border: formData.tagColor === col ? '3px solid #ffffff' : '1px solid transparent',
                             boxShadow: formData.tagColor === col ? '0 0 10px rgba(255,255,255,0.6)' : 'none',
